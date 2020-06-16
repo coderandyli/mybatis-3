@@ -26,6 +26,8 @@ import java.util.Set;
 import org.apache.ibatis.reflection.ExceptionUtil;
 
 /**
+ * 借助 Java InvocationHandler实现的动态代理模式
+ *
  * @author Clinton Begin
  */
 public class Plugin implements InvocationHandler {
@@ -40,10 +42,16 @@ public class Plugin implements InvocationHandler {
     this.signatureMap = signatureMap;
   }
 
+  /**
+   * 静态工具函数，绑定target对象，并返回其代理对象
+   * 被 {@code {@link org.apache.ibatis.plugin.Interceptor#plugin(Object)}} 调用
+   */
   public static Object wrap(Object target, Interceptor interceptor) {
     Map<Class<?>, Set<Method>> signatureMap = getSignatureMap(interceptor);
     Class<?> type = target.getClass();
     Class<?>[] interfaces = getAllInterfaces(type, signatureMap);
+    // interceptor 与 target 互相匹配的时候，wrap() 方法才会返回代理对象
+    // 否则返回target对象本身
     if (interfaces.length > 0) {
       return Proxy.newProxyInstance(
           type.getClassLoader(),
@@ -53,6 +61,10 @@ public class Plugin implements InvocationHandler {
     return target;
   }
 
+  /**
+   * 调用target上的f()方法，会触发执行下面这个方法。
+   * 这个方法包含：执行interceptor的intecept()方法 + 执行target上f()方法。
+   */
   @Override
   public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
     try {
@@ -66,12 +78,16 @@ public class Plugin implements InvocationHandler {
     }
   }
 
+  /**
+   * 获取 Interceptor 中 @Intercepts 中的Method
+   */
   private static Map<Class<?>, Set<Method>> getSignatureMap(Interceptor interceptor) {
     Intercepts interceptsAnnotation = interceptor.getClass().getAnnotation(Intercepts.class);
     // issue #251
     if (interceptsAnnotation == null) {
       throw new PluginException("No @Intercepts annotation was found in interceptor " + interceptor.getClass().getName());
     }
+    // @Signature 数组
     Signature[] sigs = interceptsAnnotation.value();
     Map<Class<?>, Set<Method>> signatureMap = new HashMap<>();
     for (Signature sig : sigs) {
@@ -86,6 +102,9 @@ public class Plugin implements InvocationHandler {
     return signatureMap;
   }
 
+  /**
+   * 获取 Target 与 Intercept 匹配的Interfaces
+   */
   private static Class<?>[] getAllInterfaces(Class<?> type, Map<Class<?>, Set<Method>> signatureMap) {
     Set<Class<?>> interfaces = new HashSet<>();
     while (type != null) {

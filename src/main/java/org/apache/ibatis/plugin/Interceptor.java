@@ -18,12 +18,20 @@ package org.apache.ibatis.plugin;
 import java.util.Properties;
 
 /**
+ * 拦截器
+ *
  * @author Clinton Begin
  */
 public interface Interceptor {
 
   Object intercept(Invocation invocation) throws Throwable;
 
+  /**
+   * 被 {@code {@link org.apache.ibatis.plugin.InterceptorChain#pluginAll(Object)}}调用
+   *
+   * @param target
+   * @return 返回目标类代理对象
+   */
   default Object plugin(Object target) {
     return Plugin.wrap(target, this);
   }

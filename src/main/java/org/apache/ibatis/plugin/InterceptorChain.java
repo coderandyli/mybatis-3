@@ -15,17 +15,37 @@
  */
 package org.apache.ibatis.plugin;
 
+import org.apache.ibatis.executor.Executor;
+import org.apache.ibatis.executor.parameter.ParameterHandler;
+import org.apache.ibatis.mapping.BoundSql;
+import org.apache.ibatis.mapping.MappedStatement;
+import org.apache.ibatis.session.ExecutorType;
+import org.apache.ibatis.session.ResultHandler;
+import org.apache.ibatis.session.RowBounds;
+import org.apache.ibatis.transaction.Transaction;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 /**
+ * 拦截器链
+ *
  * @author Clinton Begin
  */
 public class InterceptorChain {
 
   private final List<Interceptor> interceptors = new ArrayList<>();
 
+  /**
+   * 被 {@code {@link org.apache.ibatis.session.Configuration#newExecutor(Transaction, ExecutorType)}}调用
+   * 被 {@code {@link org.apache.ibatis.session.Configuration#newParameterHandler(MappedStatement, Object, BoundSql)}}调用
+   * 被 {@code {@link org.apache.ibatis.session.Configuration#newStatementHandler(Executor, MappedStatement, Object, RowBounds, ResultHandler, BoundSql)}}调用
+   * 被 {@code {@link org.apache.ibatis.session.Configuration#newResultSetHandler(Executor, MappedStatement, RowBounds, ParameterHandler, ResultHandler, BoundSql)}}调用
+   *
+   * @param target
+   * @return
+   */
   public Object pluginAll(Object target) {
     for (Interceptor interceptor : interceptors) {
       target = interceptor.plugin(target);
@@ -33,10 +53,21 @@ public class InterceptorChain {
     return target;
   }
 
+  /**
+   * 添加拦截器
+   * 被 {@code {@link org.apache.ibatis.session.Configuration#addInterceptor(Interceptor)}} 调用
+   *
+   * @param interceptor
+   */
   public void addInterceptor(Interceptor interceptor) {
     interceptors.add(interceptor);
   }
 
+  /**
+   *  获取拦截器集合
+   *
+   * @return
+   */
   public List<Interceptor> getInterceptors() {
     return Collections.unmodifiableList(interceptors);
   }

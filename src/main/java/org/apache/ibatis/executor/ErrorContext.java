@@ -16,11 +16,13 @@
 package org.apache.ibatis.executor;
 
 /**
+ * 线程唯一的单例
+ *
  * @author Clinton Begin
  */
 public class ErrorContext {
 
-  private static final String LINE_SEPARATOR = System.lineSeparator();
+  private static final String LINE_SEPARATOR = System.lineSeparator(); // 换行符（跨平台）
   private static final ThreadLocal<ErrorContext> LOCAL = ThreadLocal.withInitial(ErrorContext::new);
 
   private ErrorContext stored;

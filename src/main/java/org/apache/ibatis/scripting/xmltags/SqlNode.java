@@ -16,6 +16,8 @@
 package org.apache.ibatis.scripting.xmltags;
 
 /**
+ * Mybatis 中语法最小单元
+ *
  * @author Clinton Begin
  */
 public interface SqlNode {
