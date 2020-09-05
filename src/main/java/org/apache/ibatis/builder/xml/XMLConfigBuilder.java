@@ -188,7 +188,7 @@ public class XMLConfigBuilder extends BaseBuilder {
   }
 
   /**
-   * 解析插件
+   * 解析插件(plugin)
    *
    * @param parent
    * @throws Exception

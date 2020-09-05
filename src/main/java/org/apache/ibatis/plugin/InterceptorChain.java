@@ -38,6 +38,7 @@ public class InterceptorChain {
   private final List<Interceptor> interceptors = new ArrayList<>();
 
   /**
+   *
    * 被 {@code {@link org.apache.ibatis.session.Configuration#newExecutor(Transaction, ExecutorType)}}调用
    * 被 {@code {@link org.apache.ibatis.session.Configuration#newParameterHandler(MappedStatement, Object, BoundSql)}}调用
    * 被 {@code {@link org.apache.ibatis.session.Configuration#newStatementHandler(Executor, MappedStatement, Object, RowBounds, ResultHandler, BoundSql)}}调用

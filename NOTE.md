@@ -1,0 +1,2 @@
+# session 
+- SqlSessionFactory与SqlSessionFactoryBuilder的作用主要为了创建SqlSession

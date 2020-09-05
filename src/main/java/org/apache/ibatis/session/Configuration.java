@@ -102,11 +102,14 @@ import org.apache.ibatis.type.TypeHandlerRegistry;
  * 创建 StatementHandler
  * @see Configuration#newStatementHandler(Executor, MappedStatement, Object, RowBounds, ResultHandler, BoundSql)
  *
- * 创建 ParameterHandle
+ * 创建 ParameterHandler
  * @see Configuration#newParameterHandler(MappedStatement, Object, BoundSql)
  *
  * 创建 ResultSetHandler
  * @see Configuration#newResultSetHandler(Executor, MappedStatement, RowBounds, ParameterHandler, ResultHandler, BoundSql)
+ *
+ * 添加Intercept到InterceptChain中
+ * @see Configuration#addInterceptor(Interceptor)
  *
  * @author Clinton Begin
  */
@@ -656,7 +659,6 @@ public class Configuration {
   public ParameterHandler newParameterHandler(MappedStatement mappedStatement, Object parameterObject, BoundSql boundSql) {
     ParameterHandler parameterHandler = mappedStatement.getLang().createParameterHandler(mappedStatement, parameterObject, boundSql);
     // 获取 ParameterHandler 的动态代理对象（如匹配不上返回其对象本身）
-
     parameterHandler = (ParameterHandler) interceptorChain.pluginAll(parameterHandler);
     return parameterHandler;
   }
