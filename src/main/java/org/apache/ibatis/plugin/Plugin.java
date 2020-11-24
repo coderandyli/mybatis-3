@@ -26,6 +26,7 @@ import java.util.Set;
 import org.apache.ibatis.reflection.ExceptionUtil;
 
 /**
+ * 用来生成被拦截对象的动态代理
  * 借助 Java InvocationHandler实现的动态代理模式
  *
  * @author Clinton Begin

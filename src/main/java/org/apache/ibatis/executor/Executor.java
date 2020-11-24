@@ -29,6 +29,8 @@ import org.apache.ibatis.transaction.Transaction;
 
 /**
  * @author Clinton Begin
+ *
+ * 使用Executor执行sql请求
  */
 public interface Executor {
 

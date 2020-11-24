@@ -35,6 +35,9 @@ import java.util.List;
  */
 public class InterceptorChain {
 
+  /**
+   * 拦截器集合
+   */
   private final List<Interceptor> interceptors = new ArrayList<>();
 
   /**
