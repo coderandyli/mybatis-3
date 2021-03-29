@@ -23,6 +23,8 @@ import java.util.LinkedList;
 import org.apache.ibatis.cache.Cache;
 
 /**
+ * 弱引用：更积极地基于垃圾收集器状态和弱引用规则移除对象。
+ *
  * Weak Reference cache decorator.
  * Thanks to Dr. Heinz Kabutz for his guidance here.
  *

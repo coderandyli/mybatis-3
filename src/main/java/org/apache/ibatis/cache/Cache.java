@@ -37,8 +37,9 @@ import java.util.concurrent.locks.ReadWriteLock;
  * </pre>
  *
  * @author Clinton Begin
+ *
+ * 缓存功能的定义
  */
-
 public interface Cache {
 
   /**

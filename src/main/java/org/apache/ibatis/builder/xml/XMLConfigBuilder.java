@@ -203,7 +203,7 @@ public class XMLConfigBuilder extends BaseBuilder {
         // 设置properties
         interceptorInstance.setProperties(properties);
         /**
-         * 调用{@code {@link org.apache.ibatis.plugin.InterceptorChain#addInterceptor(Interceptor)}}
+         * 调用{@code {@link org.apache.ibatis.plugin.InterceptorChain#addInterceptor(Interceptor)}} 添加拦截器
          */
         configuration.addInterceptor(interceptorInstance);
       }

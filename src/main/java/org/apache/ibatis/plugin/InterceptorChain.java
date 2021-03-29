@@ -1,5 +1,5 @@
 /**
- *    Copyright 2009-2019 the original author or authors.
+ *    Copyright 2009-2020 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -41,18 +41,20 @@ public class InterceptorChain {
   private final List<Interceptor> interceptors = new ArrayList<>();
 
   /**
+   * 生成动态代理对象
    *
    * 被 {@code {@link org.apache.ibatis.session.Configuration#newExecutor(Transaction, ExecutorType)}}调用
    * 被 {@code {@link org.apache.ibatis.session.Configuration#newParameterHandler(MappedStatement, Object, BoundSql)}}调用
    * 被 {@code {@link org.apache.ibatis.session.Configuration#newStatementHandler(Executor, MappedStatement, Object, RowBounds, ResultHandler, BoundSql)}}调用
    * 被 {@code {@link org.apache.ibatis.session.Configuration#newResultSetHandler(Executor, MappedStatement, RowBounds, ParameterHandler, ResultHandler, BoundSql)}}调用
-   *
    * @param target
    * @return
    */
   public Object pluginAll(Object target) {
     for (Interceptor interceptor : interceptors) {
       target = interceptor.plugin(target);
+      // 上面这行代码等于下面这行代码，target(代理对象)=target(目标对象)+interceptor(拦截器功能)
+      // target = Plugin.wrap(target, interceptor);
     }
     return target;
   }

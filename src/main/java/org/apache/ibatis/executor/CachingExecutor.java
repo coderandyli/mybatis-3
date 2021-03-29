@@ -33,6 +33,9 @@ import org.apache.ibatis.session.RowBounds;
 import org.apache.ibatis.transaction.Transaction;
 
 /**
+ * 二级缓存执行器
+ * 基于装饰器模式对Executor 做了增强，增加了二级缓存功能。
+ *
  * @author Clinton Begin
  * @author Eduardo Macarron
  */
@@ -72,6 +75,7 @@ public class CachingExecutor implements Executor {
 
   @Override
   public int update(MappedStatement ms, Object parameterObject) throws SQLException {
+    // 刷新缓存完再update
     flushCacheIfRequired(ms);
     return delegate.update(ms, parameterObject);
   }
@@ -92,6 +96,8 @@ public class CachingExecutor implements Executor {
   @Override
   public <E> List<E> query(MappedStatement ms, Object parameterObject, RowBounds rowBounds, ResultHandler resultHandler, CacheKey key, BoundSql boundSql)
       throws SQLException {
+
+    // 二级缓存的实现，先查缓存
     Cache cache = ms.getCache();
     if (cache != null) {
       flushCacheIfRequired(ms);
@@ -106,6 +112,8 @@ public class CachingExecutor implements Executor {
         return list;
       }
     }
+
+    // 缓存中不存在，查表
     return delegate.query(ms, parameterObject, rowBounds, resultHandler, key, boundSql);
   }
 
@@ -161,6 +169,10 @@ public class CachingExecutor implements Executor {
     delegate.clearLocalCache();
   }
 
+  /**
+   * 刷新缓存
+   * @param ms
+   */
   private void flushCacheIfRequired(MappedStatement ms) {
     Cache cache = ms.getCache();
     if (cache != null && ms.isFlushCacheRequired()) {

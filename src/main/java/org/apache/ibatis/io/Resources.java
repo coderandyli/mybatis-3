@@ -27,11 +27,13 @@ import java.util.Properties;
 
 /**
  * A class to simplify access to resources through the classloader.
+ * 通过类加载器获得resource的辅助类
  *
  * @author Clinton Begin
  */
 public class Resources {
 
+  // 大多数方法都是委托给ClassLoaderWrapper，再去做真正的事
   private static ClassLoaderWrapper classLoaderWrapper = new ClassLoaderWrapper();
 
   /**
@@ -252,6 +254,7 @@ public class Resources {
 
   /**
    * Loads a class
+   * 加载类
    *
    * @param className - the class to fetch
    * @return The loaded class

@@ -45,6 +45,9 @@ import org.apache.ibatis.transaction.Transaction;
 import org.apache.ibatis.type.TypeHandlerRegistry;
 
 /**
+ * {@link Executor} 的抽象类，BatchExecutor、SimpleExecutor、ReuseExecutor的基类.
+ * - 基于模板方法模式
+ *
  * @author Clinton Begin
  */
 public abstract class BaseExecutor implements Executor {
@@ -318,6 +321,9 @@ public abstract class BaseExecutor implements Executor {
     }
   }
 
+  /**
+   * 从数据库中查询, 并对查询结果进行一级缓存
+   */
   private <E> List<E> queryFromDatabase(MappedStatement ms, Object parameter, RowBounds rowBounds, ResultHandler resultHandler, CacheKey key, BoundSql boundSql) throws SQLException {
     List<E> list;
     localCache.putObject(key, EXECUTION_PLACEHOLDER);

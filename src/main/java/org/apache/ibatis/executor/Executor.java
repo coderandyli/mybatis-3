@@ -1,5 +1,5 @@
 /**
- *    Copyright 2009-2015 the original author or authors.
+ *    Copyright 2009-2020 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -30,16 +30,21 @@ import org.apache.ibatis.transaction.Transaction;
 /**
  * @author Clinton Begin
  *
- * 使用Executor执行sql请求
+ * - 使用Executor执行sql请求，BatchExecutor、SimpleExecutor、ReuseExecutor三个继承类
+ * - 采用了模板方法模式
  */
 public interface Executor {
 
+  //不需要ResultHandler
   ResultHandler NO_RESULT_HANDLER = null;
 
+  // 更新
   int update(MappedStatement ms, Object parameter) throws SQLException;
 
+  // 查询，分页，带缓存
   <E> List<E> query(MappedStatement ms, Object parameter, RowBounds rowBounds, ResultHandler resultHandler, CacheKey cacheKey, BoundSql boundSql) throws SQLException;
 
+  // 查询，分页
   <E> List<E> query(MappedStatement ms, Object parameter, RowBounds rowBounds, ResultHandler resultHandler) throws SQLException;
 
   <E> Cursor<E> queryCursor(MappedStatement ms, Object parameter, RowBounds rowBounds) throws SQLException;

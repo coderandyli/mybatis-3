@@ -1,5 +1,5 @@
 /**
- *    Copyright 2009-2019 the original author or authors.
+ *    Copyright 2009-2020 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -27,7 +27,10 @@ import org.apache.ibatis.reflection.ExceptionUtil;
 
 /**
  * 用来生成被拦截对象的动态代理
+ *
  * 借助 Java InvocationHandler实现的动态代理模式
+ * 用来代理给 target 对象添加 Interceptor 功能。
+ * 其中，要代理的 target 对象就是 Executor、StatementHandler、ParameterHandler、ResultSetHandler 这四个类的对象
  *
  * @author Clinton Begin
  */
@@ -44,7 +47,8 @@ public class Plugin implements InvocationHandler {
   }
 
   /**
-   * 静态工具函数，绑定target对象，并返回其代理对象
+   * 静态工具函数，绑定target对象，并返回其动态代理对象
+   * 动态代理对象 = target对象 + Interceptor对象
    * 被 {@code {@link org.apache.ibatis.plugin.Interceptor#plugin(Object)}} 调用
    */
   public static Object wrap(Object target, Interceptor interceptor) {

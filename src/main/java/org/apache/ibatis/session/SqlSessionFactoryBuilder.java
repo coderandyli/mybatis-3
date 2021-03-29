@@ -26,6 +26,13 @@ import org.apache.ibatis.executor.ErrorContext;
 import org.apache.ibatis.session.defaults.DefaultSqlSessionFactory;
 
 /**
+ * 建造者模式创建SqlSessionFactory
+ *  - 类中包含大量的build重载函数
+ *
+ *  SqlSessionFactoryBuilder 设计重构为了简化开发
+ *    - 构建SqlSessionFactory前，需要先构建Configuration，而构建Configuration非常复杂
+ *      比如：配置的读取、解析、创建n多对象等，为了隐藏Configuration的创建过程，对程序员透明，引入了SqlSessionFactoryBuilder
+ *
  * Builds {@link SqlSession} instances.
  *
  * @author Clinton Begin

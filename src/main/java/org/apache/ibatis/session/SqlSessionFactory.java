@@ -18,6 +18,14 @@ package org.apache.ibatis.session;
 import java.sql.Connection;
 
 /**
+ * {@code {@link org.apache.ibatis.session.defaults.DefaultSqlSessionFactory}} 是其唯一实现类
+ *
+ * 通过重载多个 openSession() 函数，支持通过组合 autoCommit、Executor、Transaction 等不同参数，来创建 SqlSession 对象
+ *
+ * > 标准的工厂模式通过type类创建继承同一父类的不同子类对象，而这里通过传递不同的参数创建同一个对象，所以更像建造者模式。
+ *
+ *
+ *
  * Creates an {@link SqlSession} out of a connection or a DataSource
  *
  * @author Clinton Begin

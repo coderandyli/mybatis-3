@@ -16,13 +16,17 @@
 package org.apache.ibatis.executor;
 
 /**
+ * 错误上下文
+ *
  * 线程唯一的单例
  *
+ * 基于 ThreadLocal 实现的线程唯一的单例
  * @author Clinton Begin
  */
 public class ErrorContext {
 
   private static final String LINE_SEPARATOR = System.lineSeparator(); // 换行符（跨平台）
+  //每个线程给开一个错误上下文，防止多线程问题(线程唯一的单例)
   private static final ThreadLocal<ErrorContext> LOCAL = ThreadLocal.withInitial(ErrorContext::new);
 
   private ErrorContext stored;
