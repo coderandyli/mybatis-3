@@ -61,29 +61,38 @@ public class DefaultParameterHandler implements ParameterHandler {
   @Override
   public void setParameters(PreparedStatement ps) {
     ErrorContext.instance().activity("setting parameters").object(mappedStatement.getParameterMap().getId());
+    // 从boundSql中获取sql语句的参数映射列表， parameterMappings 就是对 #{} 或者 ${} 里面参数的封装
     List<ParameterMapping> parameterMappings = boundSql.getParameterMappings();
+    // 遍历这个参数列表，把参数设置到PreparedStatement中
     if (parameterMappings != null) {
       for (int i = 0; i < parameterMappings.size(); i++) {
         ParameterMapping parameterMapping = parameterMappings.get(i);
+        // 对于存储过程中的参数不处理
         if (parameterMapping.getMode() != ParameterMode.OUT) {
-          Object value;
-          String propertyName = parameterMapping.getProperty();
+          Object value; //绑定的实参
+          String propertyName = parameterMapping.getProperty(); // 参数的名字
           if (boundSql.hasAdditionalParameter(propertyName)) { // issue #448 ask first for additional params
+            // 获取对应的实参值
             value = boundSql.getAdditionalParameter(propertyName);
           } else if (parameterObject == null) {
             value = null;
           } else if (typeHandlerRegistry.hasTypeHandler(parameterObject.getClass())) {
-            value = parameterObject;
+            value = parameterObject; // 实参可以直接通过TypeHandler转换为JdbcType
           } else {
+            // 获取对象中相应的属性或查找Map对象中的值
             MetaObject metaObject = configuration.newMetaObject(parameterObject);
             value = metaObject.getValue(propertyName);
           }
+          // 从parameterMapping中获取typeHandler对象
           TypeHandler typeHandler = parameterMapping.getTypeHandler();
+          //从从parameterMapping获取参数对应的jdbcType
           JdbcType jdbcType = parameterMapping.getJdbcType();
           if (value == null && jdbcType == null) {
             jdbcType = configuration.getJdbcTypeForNull();
           }
           try {
+            // 通过TypeHandler.setParameter方法会调用PreparedStaement.set*()方法
+            // 为SQL语句绑定相应实参
             typeHandler.setParameter(ps, i + 1, value, jdbcType);
           } catch (TypeException | SQLException e) {
             throw new TypeException("Could not set parameters for mapping: " + parameterMapping + ". Cause: " + e, e);

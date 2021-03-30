@@ -513,23 +513,23 @@
     └── package-info.java
 ```
 
-# 使用步骤
-
-
 # Session 模块
+
 - SqlSessionFactoryBuilder
     - 使用建造者模式创建SqlSessionFactory（非标准的建造者模式）
     > 构建SqlSessionFactory前，需要先构建Configuration，而构建Configuration非常复杂
 比如：配置的读取、解析、创建n多对象等，为了隐藏Configuration的创建过程，对程序员透明，引入了SqlSessionFactoryBuilder
+
 - SqlSessionFactory
     >  通过重载多个 openSession() 函数，支持通过组合 autoCommit、Executor、Transaction 等不同参数，来创建 SqlSession 对象
  标准的工厂模式通过type类创建继承同一父类的不同子类对象，而这里通过传递不同的参数创建同一个对象，所以更像建造者模式。
 
-
 - SqlSessionFactoryBuilder 与 SqlSessionFactory 的作用为了创建 SqlSession，没有其他作用，
 > 所以，我更建议参照 Spring 的设计思路，把 SqlSessionFactoryBuilder 和 SqlSessionFactory 的逻辑，放到一个叫“ApplicationContext”的类中。让这个类来全权负责读入配置文件，创建 Congfiguration，生成 SqlSession。 
 
--  SqlSession Mybatis工作的主要顶层API，表示和数据库交互时的会话，完成数据库的CURD操作， SqlSession将执行sql的业务逻辑委托给了**Executur**（查看Executor的唯一实现类DefaultSqlSession）, 很多操作都委托给了Executor
+-  SqlSession
+    - 对外提供了用户和数据库之间交互所需的所有方法，隐藏了底层的细节，默认实现类是**DefaultSqlSession**
+    - Mybatis工作的主要顶层API，表示和数据库交互时的会话，完成数据库的CURD操作， SqlSession将执行sql的业务逻辑委托给了**Executur**（查看Executor的唯一实现类DefaultSqlSession）, 很多操作都委托给了Executor
 
 - Configuration：MyBatis所有的配置信息都保存在Configuration对象之中，配置文件中的大部分配置都会存储到该类中
 
@@ -603,12 +603,30 @@ Mybatis的日志模块并没有直接采用Slf4j(简单日志门面)，而是通
 
 # 一级缓存和二级缓存
 ## 一级缓存
+### 概述
 - 即本地缓存，默认开启，仅仅会对一个会话(sqlSession)中的数据进行缓存
+- 一级缓存不能关闭，但其提供了两个不同的的作用域 
+    - SESSION(数据库会话内部共享), 其生命周期与SqlSession一致
+    - STATEMENT（只对当前的statement有效）;
+- 集群环境下可能会引起脏数据，建议设定作用范围为Statement。
+
+### 执行时序图
+![images](https://pic4.zhimg.com/v2-abec086d662525dba2502a541d944ec3_r.jpg)
+
+### 本地缓存存在的问题
+1. SESSION作用域时多节点查询问题
+- 假如同一查询sql，在两个节点查询时，两个节点都有自己的一级缓存，两个节点都不在查库，此时节点1对数据update，那么节点1本地缓存会被刷新，
+但节点2并没有刷新，此时节点2查询的数据是错误的。
+- 解决方式: 将本地缓存的作用域设置为STATEMENT（可以理解为关闭了本地缓存）
 
 ## 二级缓存
+
+
+# 执行过程
 
  
 # Reference
 - 《设计模式》
 - [Mybatis运行原理](https://zhuanlan.zhihu.com/p/97879019)
 - [Mybatis](https://mybatis.org/mybatis-3/zh/configuration.html)
+- [聊聊MyBatis缓存机制(美团)](https://zhuanlan.zhihu.com/p/33179093)

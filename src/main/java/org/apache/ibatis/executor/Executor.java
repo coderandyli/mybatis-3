@@ -38,13 +38,15 @@ public interface Executor {
   //不需要ResultHandler
   ResultHandler NO_RESULT_HANDLER = null;
 
-  // 更新
+  /***
+   * {@code {@link org.apache.ibatis.session.SqlSession}}的insert、update、delete 都走该方法.
+   */
   int update(MappedStatement ms, Object parameter) throws SQLException;
 
-  // 查询，分页，带缓存
+  // 查询
   <E> List<E> query(MappedStatement ms, Object parameter, RowBounds rowBounds, ResultHandler resultHandler, CacheKey cacheKey, BoundSql boundSql) throws SQLException;
 
-  // 查询，分页
+  // 查询
   <E> List<E> query(MappedStatement ms, Object parameter, RowBounds rowBounds, ResultHandler resultHandler) throws SQLException;
 
   <E> Cursor<E> queryCursor(MappedStatement ms, Object parameter, RowBounds rowBounds) throws SQLException;
@@ -65,6 +67,9 @@ public interface Executor {
 
   Transaction getTransaction();
 
+  /**
+   * 关闭
+   */
   void close(boolean forceRollback);
 
   boolean isClosed();

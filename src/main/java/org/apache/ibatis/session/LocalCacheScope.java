@@ -16,6 +16,10 @@
 package org.apache.ibatis.session;
 
 /**
+ * 本地缓存作用范围
+ * - SESSION: 数据库会话内部(sqlSession)共享，默认级别
+ * - STATEMENT: 只对当前执行的statement有效（可以理解为关闭本地缓存）
+ *
  * @author Eduardo Macarron
  */
 public enum LocalCacheScope {

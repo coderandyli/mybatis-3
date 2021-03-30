@@ -24,6 +24,9 @@ import org.apache.ibatis.cache.CacheException;
 /**
  * 最基础的缓存类
  *
+ * 实现原理
+ * - 内部实现比较简单，基于一个没用容量设定的HashMap实现的，缓存性能少有所欠缺
+ *
  * @author Clinton Begin
  */
 public class PerpetualCache implements Cache {

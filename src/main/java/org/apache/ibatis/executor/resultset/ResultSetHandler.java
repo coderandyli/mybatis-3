@@ -23,12 +23,14 @@ import java.util.List;
 import org.apache.ibatis.cursor.Cursor;
 
 /**
- * 封装执行结果
+ * sql执行结果处理器
  *
  * @author Clinton Begin
  */
 public interface ResultSetHandler {
-
+  /**
+   * 封装执行结果
+   */
   <E> List<E> handleResultSets(Statement stmt) throws SQLException;
 
   <E> Cursor<E> handleCursorResultSets(Statement stmt) throws SQLException;

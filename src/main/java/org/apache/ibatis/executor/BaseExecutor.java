@@ -48,6 +48,7 @@ import org.apache.ibatis.type.TypeHandlerRegistry;
  * {@link Executor} 的抽象类，BatchExecutor、SimpleExecutor、ReuseExecutor的基类.
  * - 基于模板方法模式
  *
+ * 【一级缓存】在该类中实现
  * @author Clinton Begin
  */
 public abstract class BaseExecutor implements Executor {
@@ -58,6 +59,7 @@ public abstract class BaseExecutor implements Executor {
   protected Executor wrapper;
 
   protected ConcurrentLinkedQueue<DeferredLoad> deferredLoads;
+  // 本地缓存
   protected PerpetualCache localCache;
   protected PerpetualCache localOutputParameterCache;
   protected Configuration configuration;
@@ -99,7 +101,9 @@ public abstract class BaseExecutor implements Executor {
     } finally {
       transaction = null;
       deferredLoads = null;
-      localCache = null;
+      // 设置为null,只是栈中指向的引用为null， 但new出来的localCache对象还存在与堆里面，内存并不会释放，按照GC算法要等 survior1 or survior2 满的时候 JVM 才会调用 GC 命令清除对应 survior 区的对象，将没有栈指向的对象给回收掉。
+      // 所以将用完的变量设置为null有助于java的gc更早的将无用的内存回收。
+      localCache = null; // 清空【一级缓存】
       localOutputParameterCache = null;
       closed = true;
     }
@@ -116,7 +120,9 @@ public abstract class BaseExecutor implements Executor {
     if (closed) {
       throw new ExecutorException("Executor was closed.");
     }
+    // 清除本地缓存
     clearLocalCache();
+
     return doUpdate(ms, parameter);
   }
 
@@ -135,6 +141,8 @@ public abstract class BaseExecutor implements Executor {
   @Override
   public <E> List<E> query(MappedStatement ms, Object parameter, RowBounds rowBounds, ResultHandler resultHandler) throws SQLException {
     BoundSql boundSql = ms.getBoundSql(parameter);
+
+    // 【一级缓存】：生成缓存key
     CacheKey key = createCacheKey(ms, parameter, rowBounds, boundSql);
     return query(ms, parameter, rowBounds, resultHandler, key, boundSql);
   }
@@ -149,13 +157,17 @@ public abstract class BaseExecutor implements Executor {
     if (queryStack == 0 && ms.isFlushCacheRequired()) {
       clearLocalCache();
     }
+
+    // 【一级缓存】本地缓存中查询不到，就查询db
     List<E> list;
     try {
       queryStack++;
       list = resultHandler == null ? (List<E>) localCache.getObject(key) : null;
       if (list != null) {
+        // 主要处理存储过程的
         handleLocallyCachedOutputParameters(ms, key, parameter, boundSql);
       } else {
+        // 查询数据库
         list = queryFromDatabase(ms, parameter, rowBounds, resultHandler, key, boundSql);
       }
     } finally {
@@ -167,6 +179,8 @@ public abstract class BaseExecutor implements Executor {
       }
       // issue #601
       deferredLoads.clear();
+      // 如果【一级缓存】作用范围是STATEMENT,清除缓存；（可以理解为关闭了一级缓存）
+      // 这也是 STATEMENT类型无法共享localcache的原因
       if (configuration.getLocalCacheScope() == LocalCacheScope.STATEMENT) {
         // issue #482
         clearLocalCache();
@@ -194,6 +208,15 @@ public abstract class BaseExecutor implements Executor {
     }
   }
 
+  /**
+   * 【一级缓存】生成缓存key
+   *
+   * @param ms
+   * @param parameterObject
+   * @param rowBounds
+   * @param boundSql
+   * @return
+   */
   @Override
   public CacheKey createCacheKey(MappedStatement ms, Object parameterObject, RowBounds rowBounds, BoundSql boundSql) {
     if (closed) {
@@ -262,6 +285,9 @@ public abstract class BaseExecutor implements Executor {
     }
   }
 
+  /**
+   * 【一级缓存】删除本地缓存
+   */
   @Override
   public void clearLocalCache() {
     if (!closed) {
@@ -328,6 +354,7 @@ public abstract class BaseExecutor implements Executor {
     List<E> list;
     localCache.putObject(key, EXECUTION_PLACEHOLDER);
     try {
+      // 【模板方法模式】子类实现
       list = doQuery(ms, parameter, rowBounds, resultHandler, boundSql);
     } finally {
       localCache.removeObject(key);

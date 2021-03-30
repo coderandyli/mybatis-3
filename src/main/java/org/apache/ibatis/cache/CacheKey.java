@@ -23,6 +23,8 @@ import java.util.StringJoiner;
 import org.apache.ibatis.reflection.ArrayUtil;
 
 /**
+ * 缓存key
+ *
  * @author Clinton Begin
  */
 public class CacheKey implements Cloneable, Serializable {
@@ -47,10 +49,17 @@ public class CacheKey implements Cloneable, Serializable {
 
   private final int multiplier;
   private int hashcode;
+  /**
+   * 校验和
+   */
   private long checksum;
+  /**
+   * 元素数量
+   */
   private int count;
   // 8/21/2017 - Sonarlint flags this as needing to be marked transient. While true if content is not serializable, this
   // is not always true and thus should not be marked transient.
+  // 元素列表
   private List<Object> updateList;
 
   public CacheKey() {
@@ -69,6 +78,11 @@ public class CacheKey implements Cloneable, Serializable {
     return updateList.size();
   }
 
+  /**
+   * 向cacheKey中添加元素，并进行count、checksum、hashcode计算
+   *
+   * @param object
+   */
   public void update(Object object) {
     int baseHashCode = object == null ? 1 : ArrayUtil.hashCode(object);
 
@@ -76,6 +90,7 @@ public class CacheKey implements Cloneable, Serializable {
     checksum += baseHashCode;
     baseHashCode *= count;
 
+    // hashcode赋值
     hashcode = multiplier * hashcode + baseHashCode;
 
     updateList.add(object);
@@ -87,6 +102,13 @@ public class CacheKey implements Cloneable, Serializable {
     }
   }
 
+  /**
+   * equals方法重写
+   *  - hashcode，checksum，count进行比较外，还要比较updatelist中的每一个元素
+   *
+   * @param object
+   * @return
+   */
   @Override
   public boolean equals(Object object) {
     if (this == object) {
