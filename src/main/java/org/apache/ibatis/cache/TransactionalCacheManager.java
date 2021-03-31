@@ -21,24 +21,38 @@ import java.util.Map;
 import org.apache.ibatis.cache.decorators.TransactionalCache;
 
 /**
+ *  事务缓存管理器，被{@code {@link org.apache.ibatis.executor.CachingExecutor}} 使用
+ *
  * @author Clinton Begin
  */
 public class TransactionalCacheManager {
 
+  /**
+   * 可以管理多个事务缓存
+   */
   private final Map<Cache, TransactionalCache> transactionalCaches = new HashMap<>();
 
   public void clear(Cache cache) {
     getTransactionalCache(cache).clear();
   }
 
+  /**
+   * 获取某个事务缓存的值
+   */
   public Object getObject(Cache cache, CacheKey key) {
     return getTransactionalCache(cache).getObject(key);
   }
 
+  /**
+   * 向某个事务缓存中存入值
+   */
   public void putObject(Cache cache, CacheKey key, Object value) {
     getTransactionalCache(cache).putObject(key, value);
   }
 
+  /**
+   * 提交时全部提交
+   */
   public void commit() {
     for (TransactionalCache txCache : transactionalCaches.values()) {
       txCache.commit();
@@ -51,6 +65,11 @@ public class TransactionalCacheManager {
     }
   }
 
+  /**
+   *
+   * @param cache
+   * @return
+   */
   private TransactionalCache getTransactionalCache(Cache cache) {
     return transactionalCaches.computeIfAbsent(cache, TransactionalCache::new);
   }

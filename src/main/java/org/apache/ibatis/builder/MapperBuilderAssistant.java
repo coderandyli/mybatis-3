@@ -50,12 +50,19 @@ import org.apache.ibatis.type.JdbcType;
 import org.apache.ibatis.type.TypeHandler;
 
 /**
+ * 映射构造器助手，基于【建造者模式】
  * @author Clinton Begin
  */
 public class MapperBuilderAssistant extends BaseBuilder {
 
+  /**
+   * 命名空间
+   */
   private String currentNamespace;
   private final String resource;
+  /**
+   * 当前缓存
+   */
   private Cache currentCache;
   private boolean unresolvedCacheRef; // issue #676
 
@@ -82,6 +89,9 @@ public class MapperBuilderAssistant extends BaseBuilder {
     this.currentNamespace = currentNamespace;
   }
 
+  /**
+   * 为id加上namespace前缀，如selectOrder -> com.eports.ad.selectOrder
+   */
   public String applyCurrentNamespace(String base, boolean isReference) {
     if (base == null) {
       return null;
@@ -121,6 +131,7 @@ public class MapperBuilderAssistant extends BaseBuilder {
     }
   }
 
+
   public Cache useNewCache(Class<? extends Cache> typeClass,
       Class<? extends Cache> evictionClass,
       Long flushInterval,
@@ -128,6 +139,7 @@ public class MapperBuilderAssistant extends BaseBuilder {
       boolean readWrite,
       boolean blocking,
       Properties props) {
+    // 构造缓存，基于【装饰者模式】创建一连串的cache
     Cache cache = new CacheBuilder(currentNamespace)
         .implementation(valueOrDefault(typeClass, PerpetualCache.class))
         .addDecorator(valueOrDefault(evictionClass, LruCache.class))
@@ -137,7 +149,9 @@ public class MapperBuilderAssistant extends BaseBuilder {
         .blocking(blocking)
         .properties(props)
         .build();
+    // 加入缓存
     configuration.addCache(cache);
+    // 当期的缓存
     currentCache = cache;
     return cache;
   }

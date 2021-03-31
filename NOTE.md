@@ -311,7 +311,7 @@
 │       └── package-info.java
 ├── mapping
 │   ├── BoundSql.java
-│   ├── CacheBuilder.java
+│   ├── CacheBuilder.java                               --- 缓存构造器，被 
 │   ├── DatabaseIdProvider.java
 │   ├── DefaultDatabaseIdProvider.java
 │   ├── Discriminator.java
@@ -602,6 +602,7 @@ Mybatis的日志模块并没有直接采用Slf4j(简单日志门面)，而是通
 
 
 # 一级缓存和二级缓存
+- 查询执行流程: 二级缓存 -> 一级缓存 -> 数据库。
 ## 一级缓存
 ### 概述
 - 即本地缓存，默认开启，仅仅会对一个会话(sqlSession)中的数据进行缓存
@@ -620,7 +621,10 @@ Mybatis的日志模块并没有直接采用Slf4j(简单日志门面)，而是通
 - 解决方式: 将本地缓存的作用域设置为STATEMENT（可以理解为关闭了本地缓存）
 
 ## 二级缓存
-
+![images](https://pic4.zhimg.com/80/v2-65b50fa087add440f70e29ce85aa624b_1440w.jpg)
+- 利用【装饰者模式】，通过CachingExecutor对BaseExecutor装饰，实现二级缓存
+- 二级缓存默认不开启，需要在对应的sql映射文件中声明<cache/>
+- 【二级缓存】源码阅读入口：CachingExecutor#query
 
 # 执行过程
 

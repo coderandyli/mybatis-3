@@ -209,7 +209,7 @@ public abstract class BaseExecutor implements Executor {
   }
 
   /**
-   * 【一级缓存】生成缓存key
+   * 【一级缓存、二级缓存】生成缓存key
    *
    * @param ms
    * @param parameterObject

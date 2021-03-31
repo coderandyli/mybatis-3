@@ -22,11 +22,8 @@ import org.apache.ibatis.cache.Cache;
 import org.apache.ibatis.cache.CacheKey;
 import org.apache.ibatis.cache.TransactionalCacheManager;
 import org.apache.ibatis.cursor.Cursor;
-import org.apache.ibatis.mapping.BoundSql;
-import org.apache.ibatis.mapping.MappedStatement;
-import org.apache.ibatis.mapping.ParameterMapping;
-import org.apache.ibatis.mapping.ParameterMode;
-import org.apache.ibatis.mapping.StatementType;
+import org.apache.ibatis.mapping.*;
+import org.apache.ibatis.parsing.XNode;
 import org.apache.ibatis.reflection.MetaObject;
 import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.RowBounds;
@@ -42,6 +39,9 @@ import org.apache.ibatis.transaction.Transaction;
 public class CachingExecutor implements Executor {
 
   private final Executor delegate;
+  /**
+   * 事务缓存管理器
+   */
   private final TransactionalCacheManager tcm = new TransactionalCacheManager();
 
   public CachingExecutor(Executor delegate) {
@@ -93,13 +93,22 @@ public class CachingExecutor implements Executor {
     return query(ms, parameterObject, rowBounds, resultHandler, key, boundSql);
   }
 
+  // 此处可作为【二级缓存】源码阅读入口
   @Override
   public <E> List<E> query(MappedStatement ms, Object parameterObject, RowBounds rowBounds, ResultHandler resultHandler, CacheKey key, BoundSql boundSql)
       throws SQLException {
 
+    /**
+     * - 默认情况下是没有开启缓存的(二级缓存).要开启二级缓存,你需要在你的 SQL 映射文件中添加一行: <cache/>（只要声明了<cache/>，就会读取二级缓存的默认配置，详见{@link org.apache.ibatis.builder.xml.XMLMapperBuilder#configurationElement(XNode)}）
+     *
+     * - 此处的cache从配置文件里面解析了相关缓存配置，利用【装饰者模式】装载了一个一个装饰者详见{@link CacheBuilder#build()}
+     *
+     * 默认情况下的装饰链为：SynchronizedCache -> LoggingCache -> SerializedCache -> LruCache -> PerpetualCache。
+     */
     // 二级缓存的实现，先查缓存
     Cache cache = ms.getCache();
     if (cache != null) {
+      // 刷新缓存，默认情况下select不会刷新缓存
       flushCacheIfRequired(ms);
       if (ms.isUseCache() && resultHandler == null) {
         ensureNoOutParams(ms, boundSql);
@@ -170,7 +179,8 @@ public class CachingExecutor implements Executor {
   }
 
   /**
-   * 刷新缓存
+   * 判断是否需要刷新缓存
+   * - 默认情况下select不会刷新缓存，insert/update/delete会刷新缓存。
    * @param ms
    */
   private void flushCacheIfRequired(MappedStatement ms) {

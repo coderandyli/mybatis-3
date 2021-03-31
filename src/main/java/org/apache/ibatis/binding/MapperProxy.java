@@ -30,6 +30,8 @@ import org.apache.ibatis.reflection.ExceptionUtil;
 import org.apache.ibatis.session.SqlSession;
 
 /**
+ * 基于 【JDK动态代理】 实现 映射器代理
+ *
  * @author Clinton Begin
  * @author Eduardo Macarron
  */

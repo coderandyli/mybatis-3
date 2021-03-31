@@ -20,13 +20,22 @@ import org.apache.ibatis.logging.Log;
 import org.apache.ibatis.logging.LogFactory;
 
 /**
+ * 装饰类，日志功能
+ * - 如果开启debug模式，会输出命中率
+ *
  * @author Clinton Begin
  */
 public class LoggingCache implements Cache {
 
   private final Log log;
   private final Cache delegate;
+  /**
+   *  请求次数
+   */
   protected int requests = 0;
+  /**
+   * 命中次数
+   */
   protected int hits = 0;
 
   public LoggingCache(Cache delegate) {
@@ -56,6 +65,8 @@ public class LoggingCache implements Cache {
     if (value != null) {
       hits++;
     }
+
+    // 输出缓存命中率
     if (log.isDebugEnabled()) {
       log.debug("Cache Hit Ratio [" + getId() + "]: " + getHitRatio());
     }
@@ -82,6 +93,9 @@ public class LoggingCache implements Cache {
     return delegate.equals(obj);
   }
 
+  /**
+   * 计算命中率
+   */
   private double getHitRatio() {
     return (double) hits / (double) requests;
   }

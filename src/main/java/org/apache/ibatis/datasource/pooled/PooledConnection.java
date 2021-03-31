@@ -24,16 +24,24 @@ import java.sql.SQLException;
 import org.apache.ibatis.reflection.ExceptionUtil;
 
 /**
+ * 池化的连接
+ * 基于【动态代理】实现
+ *
  * @author Clinton Begin
  */
 class PooledConnection implements InvocationHandler {
 
+  /**
+   * close操作
+   */
   private static final String CLOSE = "close";
   private static final Class<?>[] IFACES = new Class<?>[] { Connection.class };
 
   private final int hashCode;
   private final PooledDataSource dataSource;
+  // 真正的连接
   private final Connection realConnection;
+  // 代理的连接
   private final Connection proxyConnection;
   private long checkoutTimestamp;
   private long createdTimestamp;
@@ -242,6 +250,7 @@ class PooledConnection implements InvocationHandler {
   @Override
   public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
     String methodName = method.getName();
+    // 如果调用close操作，不进行相关操作，反而将这个connection加入到池中
     if (CLOSE.equals(methodName)) {
       dataSource.pushConnection(this);
       return null;

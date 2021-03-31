@@ -35,6 +35,9 @@ import org.apache.ibatis.reflection.MetaObject;
 import org.apache.ibatis.reflection.SystemMetaObject;
 
 /**
+ * 缓存构造器，基于【建造者模式】
+ * 被{@link org.apache.ibatis.builder.MapperBuilderAssistant#useNewCache(Class, Class, Long, Integer, boolean, boolean, Properties)}调用
+ *
  * @author Clinton Begin
  */
 public class CacheBuilder {
@@ -89,32 +92,51 @@ public class CacheBuilder {
     return this;
   }
 
+  /**
+   * 创建 chache
+   *   - 对【装饰者模式】的典型引用，对对象进行增强，实现可插拔
+   *
+   * @return
+   */
   public Cache build() {
     setDefaultImplementations();
+    // 先new一个base的chache（PerpetualCache）
     Cache cache = newBaseCacheInstance(implementation, id);
+    // 设置额外属性
     setCacheProperties(cache);
     // issue #352, do not apply decorators to custom caches
     if (PerpetualCache.class.equals(cache.getClass())) {
       for (Class<? extends Cache> decorator : decorators) {
+        // 基于装饰者模式一个一个包装cache
         cache = newCacheDecoratorInstance(decorator, cache);
+        // 设置额外属性（又来一遍）
         setCacheProperties(cache);
       }
+      // 设置标准的装饰cache
       cache = setStandardDecorators(cache);
     } else if (!LoggingCache.class.isAssignableFrom(cache.getClass())) {
+      // 如果不是自定义缓存，且不是日志，增加日志
       cache = new LoggingCache(cache);
     }
     return cache;
   }
 
   private void setDefaultImplementations() {
+    //又是一重保险，如果为null则设默认值,和XMLMapperBuilder.cacheElement以及MapperBuilderAssistant.useNewCache逻辑重复了
     if (implementation == null) {
       implementation = PerpetualCache.class;
+      // 装饰者类为空，增加默认的LRU Cache装饰者
       if (decorators.isEmpty()) {
         decorators.add(LruCache.class);
       }
     }
   }
 
+  /**
+   * 设置标准的缓存Cache装饰者
+   * @param cache
+   * @return
+   */
   private Cache setStandardDecorators(Cache cache) {
     try {
       MetaObject metaCache = SystemMetaObject.forObject(cache);
