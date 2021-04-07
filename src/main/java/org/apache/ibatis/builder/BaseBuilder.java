@@ -33,6 +33,9 @@ import org.apache.ibatis.type.TypeHandlerRegistry;
  */
 public abstract class BaseBuilder {
   protected final Configuration configuration;
+  /**
+   * 类型别名注册机
+   */
   protected final TypeAliasRegistry typeAliasRegistry;
   protected final TypeHandlerRegistry typeHandlerRegistry;
 
@@ -50,6 +53,9 @@ public abstract class BaseBuilder {
     return Pattern.compile(regex == null ? defaultValue : regex);
   }
 
+  /**
+   * 如果为空，设置默认值
+   */
   protected Boolean booleanValueOf(String value, Boolean defaultValue) {
     return value == null ? defaultValue : Boolean.valueOf(value);
   }

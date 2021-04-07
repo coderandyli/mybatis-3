@@ -20,10 +20,16 @@ import java.util.Properties;
 import javax.sql.DataSource;
 
 /**
+ * 数据源工厂
+ * 有三种内置的数据源类型 UNPOODED、POOLED、JIDI
+ *
  * @author Clinton Begin
  */
 public interface DataSourceFactory {
 
+  /**
+   * 设置属性，被XMLConfigBuilder所调用
+   */
   void setProperties(Properties props);
 
   DataSource getDataSource();

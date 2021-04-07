@@ -48,14 +48,28 @@ import org.apache.ibatis.transaction.TransactionFactory;
 import org.apache.ibatis.type.JdbcType;
 
 /**
+ * XML配置构建器，建造者模式，继承自BaseBuilder
+ *
+ * 解析 mybatis-config.xml
+ *
  * @author Clinton Begin
  * @author Kazuki Shimizu
  */
 public class XMLConfigBuilder extends BaseBuilder {
 
+  /**
+   * 是否已解析
+   */
   private boolean parsed;
+  /**
+   * XPath解析
+   */
   private final XPathParser parser;
+  /**
+   * 环境
+   */
   private String environment;
+
   private final ReflectorFactory localReflectorFactory = new DefaultReflectorFactory();
 
   public XMLConfigBuilder(Reader reader) {
@@ -66,7 +80,11 @@ public class XMLConfigBuilder extends BaseBuilder {
     this(reader, environment, null);
   }
 
+  /**
+   * 构造函数，转换成XPathParser再去调用构造函数
+   */
   public XMLConfigBuilder(Reader reader, String environment, Properties props) {
+    //构造一个需要验证，XMLMapperEntityResolver的XPathParser
     this(new XPathParser(reader, true, props, new XMLMapperEntityResolver()), environment, props);
   }
 
@@ -82,20 +100,29 @@ public class XMLConfigBuilder extends BaseBuilder {
     this(new XPathParser(inputStream, true, props, new XMLMapperEntityResolver()), environment, props);
   }
 
+  //上面6个构造函数最后都合流到这个函数，传入XPathParser
   private XMLConfigBuilder(XPathParser parser, String environment, Properties props) {
+    // 调用父类初始化Configuration
     super(new Configuration());
     ErrorContext.instance().resource("SQL Mapper Configuration");
+    // 将Properties全部设置到configuration里面去
     this.configuration.setVariables(props);
     this.parsed = false;
     this.environment = environment;
     this.parser = parser;
   }
 
+  /**
+   * 解析配置
+   * @return
+   */
   public Configuration parse() {
+    // 如果已经解析过，报错
     if (parsed) {
       throw new BuilderException("Each XMLConfigBuilder can only be used once.");
     }
     parsed = true;
+    // 解析<configuration>
     parseConfiguration(parser.evalNode("/configuration"));
     return configuration;
   }
@@ -107,22 +134,80 @@ public class XMLConfigBuilder extends BaseBuilder {
    */
   private void parseConfiguration(XNode root) {
     try {
+      // 分步骤解析
       // issue #117 read properties first
+      /**
+       * 1. 解析【properties】
+       *
+       *     <!--配置文件地址-->
+       *     <properties resource="local-mysql.properties"/>
+       *
+       *     local-mysql.properties为配置文件内容如下
+       * ```
+       * driver=com.mysql.jdbc.Driver
+       * url=jdbc:mysql://127.0.0.1:3306/demo?useUnicode=true&characterEncoding=utf-8&useSSL=false
+       * username=root
+       * password=123456
+       * ```
+       */
       propertiesElement(root.evalNode("properties"));
+
       Properties settings = settingsAsProperties(root.evalNode("settings"));
       loadCustomVfs(settings);
       loadCustomLogImpl(settings);
+      // 2. 解析【别名】
       typeAliasesElement(root.evalNode("typeAliases"));
-      // 解析插件
+      // 3. 解析【插件】
       pluginElement(root.evalNode("plugins"));
+      // 4. 解析【对象工厂】
       objectFactoryElement(root.evalNode("objectFactory"));
+      // 5. 解析【对象包装工厂】
       objectWrapperFactoryElement(root.evalNode("objectWrapperFactory"));
+
       reflectorFactoryElement(root.evalNode("reflectorFactory"));
+      /**
+       * 7. 解析【设置】
+       *
+       *     <settings>
+       *         <setting name="localCacheScope" value="SESSION"/>
+       *         <setting name="cacheEnabled" value="true"/>
+       *         <!--开启驼峰式命名，数据库的列名能够映射到去除下划线驼峰命名后的字段名-->
+       *         <setting name="mapUnderscoreToCamelCase" value="true"/>
+       *         <setting name="logImpl" value="LOG4J"/>
+       *     </settings>
+       */
       settingsElement(settings);
       // read it after objectFactory and objectWrapperFactory issue #631
+      /**
+       * 8. 解析【环境】
+       *
+       *     <environments default="development">
+       *         <environment id="development">
+       *             <!--使用默认的JDBC事务管理-->
+       *             <transactionManager type="JDBC"/>
+       *             <!--使用连接池-->
+       *             <dataSource type="POOLED">
+       *                 <!--这里会替换为local-mysql.properties中的对应字段的值-->
+       *                 <property name="driver" value="${driver}"/>
+       *                 <property name="url" value="${url}"/>
+       *                 <property name="username" value="${username}"/>
+       *                 <property name="password" value="${password}"/>
+       *             </dataSource>
+       *         </environment>
+       *     </environments>
+       */
       environmentsElement(root.evalNode("environments"));
+      // 9. 解析【databaseIdProvider】
       databaseIdProviderElement(root.evalNode("databaseIdProvider"));
+      // 10. 解析【类型处理器】
       typeHandlerElement(root.evalNode("typeHandlers"));
+      /**
+       * 11. 解析【映射器】
+       *
+       *     <mappers>
+       *         <mapper resource="mapper/studentMapper.xml"/>
+       *     </mappers>
+       */
       mapperElement(root.evalNode("mappers"));
     } catch (Exception e) {
       throw new BuilderException("Error parsing SQL Mapper Configuration. Cause: " + e, e);
@@ -163,6 +248,22 @@ public class XMLConfigBuilder extends BaseBuilder {
     configuration.setLogImpl(logImpl);
   }
 
+  /**
+   * 解析【类型别名】
+   * <typeAliases>
+   *   <typeAlias alias="Author" type="domain.blog.Author"/>
+   *   <typeAlias alias="Blog" type="domain.blog.Blog"/>
+   *   <typeAlias alias="Comment" type="domain.blog.Comment"/>
+   *   <typeAlias alias="Post" type="domain.blog.Post"/>
+   *   <typeAlias alias="Section" type="domain.blog.Section"/>
+   *   <typeAlias alias="Tag" type="domain.blog.Tag"/>
+   * </typeAliases>
+   * or
+   * <typeAliases>
+   *   <package name="domain.blog"/>
+   * </typeAliases>
+   *
+   */
   private void typeAliasesElement(XNode parent) {
     if (parent != null) {
       for (XNode child : parent.getChildren()) {
@@ -190,8 +291,11 @@ public class XMLConfigBuilder extends BaseBuilder {
   /**
    * 解析插件(plugin)
    *
-   * @param parent
-   * @throws Exception
+   *   <plugins>
+   *     <plugin interceptor="org.apache.ibatis.builder.ExamplePlugin">
+   *       <property name="pluginProperty" value="100"/>
+   *     </plugin>
+   *   </plugins>
    */
   private void pluginElement(XNode parent) throws Exception {
     if (parent != null) {
@@ -210,6 +314,13 @@ public class XMLConfigBuilder extends BaseBuilder {
     }
   }
 
+  /**
+   * 解析【对象工厂】，可以自定义对象创建的方式，比如对象池
+   *
+   * <objectFactory type="org.mybatis.example.ExampleObjectFactory">
+   *   <property name="someProperty" value="100"/>
+   * </objectFactory>
+   */
   private void objectFactoryElement(XNode context) throws Exception {
     if (context != null) {
       String type = context.getStringAttribute("type");
@@ -220,6 +331,9 @@ public class XMLConfigBuilder extends BaseBuilder {
     }
   }
 
+  /**
+   * 解析【对象包装工厂】
+   */
   private void objectWrapperFactoryElement(XNode context) throws Exception {
     if (context != null) {
       String type = context.getStringAttribute("type");
@@ -238,7 +352,16 @@ public class XMLConfigBuilder extends BaseBuilder {
 
   private void propertiesElement(XNode context) throws Exception {
     if (context != null) {
+      //如果在这些地方,属性多于一个的话,MyBatis 按照如下的顺序加载它们:
+
+      //1.在 properties 元素体内指定的属性首先被读取。
+      //2.从类路径下资源或 properties 元素的 url 属性中加载的属性第二被读取,它会覆盖已经存在的完全一样的属性。
+      //3.作为方法参数传递的属性最后被读取, 它也会覆盖任一已经存在的完全一样的属性,这些属性可能是从 properties 元素体内和资源/url 属性中加载的。
+      //传入方式是调用构造函数时传入，public XMLConfigBuilder(Reader reader, String environment, Properties props)
+
+      //1.XNode.getChildrenAsProperties函数方便得到孩子所有Properties
       Properties defaults = context.getChildrenAsProperties();
+      //2.然后查找resource或者url,加入前面的Properties
       String resource = context.getStringAttribute("resource");
       String url = context.getStringAttribute("url");
       if (resource != null && url != null) {
@@ -249,6 +372,7 @@ public class XMLConfigBuilder extends BaseBuilder {
       } else if (url != null) {
         defaults.putAll(Resources.getUrlAsProperties(url));
       }
+      //3.Variables也全部加入Properties
       Properties vars = configuration.getVariables();
       if (vars != null) {
         defaults.putAll(vars);
@@ -258,28 +382,71 @@ public class XMLConfigBuilder extends BaseBuilder {
     }
   }
 
+  /**
+   * 解析【设置】
+   * - 配置调整很重要，会改变MyBatis 在运行时的行为方式
+   * <settings>
+   *   <setting name="cacheEnabled" value="true"/>
+   *   <setting name="lazyLoadingEnabled" value="true"/>
+   *   <setting name="multipleResultSetsEnabled" value="true"/>
+   *   <setting name="useColumnLabel" value="true"/>
+   *   <setting name="useGeneratedKeys" value="false"/>
+   *   <setting name="enhancementEnabled" value="false"/>
+   *   <setting name="defaultExecutorType" value="SIMPLE"/>
+   *   <setting name="defaultStatementTimeout" value="25000"/>
+   *   <setting name="safeRowBoundsEnabled" value="false"/>
+   *   <setting name="mapUnderscoreToCamelCase" value="false"/>
+   *   <setting name="localCacheScope" value="SESSION"/>
+   *   <setting name="jdbcTypeForNull" value="OTHER"/>
+   *   <setting name="lazyLoadTriggerMethods" value="equals,clone,hashCode,toString"/>
+   * </settings>
+   *
+   * @param props
+   */
   private void settingsElement(Properties props) {
+    // 如何自动映射列到字段/属性
     configuration.setAutoMappingBehavior(AutoMappingBehavior.valueOf(props.getProperty("autoMappingBehavior", "PARTIAL")));
+    //
     configuration.setAutoMappingUnknownColumnBehavior(AutoMappingUnknownColumnBehavior.valueOf(props.getProperty("autoMappingUnknownColumnBehavior", "NONE")));
+    // 【二级缓存】是否开启
     configuration.setCacheEnabled(booleanValueOf(props.getProperty("cacheEnabled"), true));
+    // 延迟加载的核心技术就是用代理模式（CGLIB/JAVASSIST）
     configuration.setProxyFactory((ProxyFactory) createInstance(props.getProperty("proxyFactory")));
+    // 是否延迟加载
     configuration.setLazyLoadingEnabled(booleanValueOf(props.getProperty("lazyLoadingEnabled"), false));
+    // /延迟加载时，每种属性是否还要按需加载
     configuration.setAggressiveLazyLoading(booleanValueOf(props.getProperty("aggressiveLazyLoading"), false));
+    // 允不允许多种结果集从一个单独 的语句中返回
     configuration.setMultipleResultSetsEnabled(booleanValueOf(props.getProperty("multipleResultSetsEnabled"), true));
+    // 使用列标签代替列名
     configuration.setUseColumnLabel(booleanValueOf(props.getProperty("useColumnLabel"), true));
+    // 允许 JDBC 支持生成的键
     configuration.setUseGeneratedKeys(booleanValueOf(props.getProperty("useGeneratedKeys"), false));
+    // 配置默认的执行器
     configuration.setDefaultExecutorType(ExecutorType.valueOf(props.getProperty("defaultExecutorType", "SIMPLE")));
+    // 超时时间
     configuration.setDefaultStatementTimeout(integerValueOf(props.getProperty("defaultStatementTimeout"), null));
+    //
     configuration.setDefaultFetchSize(integerValueOf(props.getProperty("defaultFetchSize"), null));
+    //
     configuration.setDefaultResultSetType(resolveResultSetType(props.getProperty("defaultResultSetType")));
+    // 是否将DB字段自动映射到驼峰式Java属性（A_COLUMN-->aColumn）
     configuration.setMapUnderscoreToCamelCase(booleanValueOf(props.getProperty("mapUnderscoreToCamelCase"), false));
+    // 嵌套语句上使用RowBound
     configuration.setSafeRowBoundsEnabled(booleanValueOf(props.getProperty("safeRowBoundsEnabled"), false));
+    //【本地缓存】 默认用session级别的缓存
     configuration.setLocalCacheScope(LocalCacheScope.valueOf(props.getProperty("localCacheScope", "SESSION")));
+    // 为NULL值设置jdbcType
     configuration.setJdbcTypeForNull(JdbcType.valueOf(props.getProperty("jdbcTypeForNull", "OTHER")));
+    // object的哪些方法将触发懒加载
     configuration.setLazyLoadTriggerMethods(stringSetValueOf(props.getProperty("lazyLoadTriggerMethods"), "equals,clone,hashCode,toString"));
+    // 使用安全的ResultHandler
     configuration.setSafeResultHandlerEnabled(booleanValueOf(props.getProperty("safeResultHandlerEnabled"), true));
+    // 动态sql生成语言所使用的脚本语言
     configuration.setDefaultScriptingLanguage(resolveClass(props.getProperty("defaultScriptingLanguage")));
+    //
     configuration.setDefaultEnumTypeHandler(resolveClass(props.getProperty("defaultEnumTypeHandler")));
+
     configuration.setCallSettersOnNulls(booleanValueOf(props.getProperty("callSettersOnNulls"), false));
     configuration.setUseActualParamName(booleanValueOf(props.getProperty("useActualParamName"), true));
     configuration.setReturnInstanceForEmptyRow(booleanValueOf(props.getProperty("returnInstanceForEmptyRow"), false));

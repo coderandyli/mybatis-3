@@ -33,15 +33,19 @@ import org.apache.ibatis.io.ResolverUtil;
 import org.apache.ibatis.io.Resources;
 
 /**
+ * 类型别名注册机
  * @author Clinton Begin
  */
 public class TypeAliasRegistry {
 
   private final Map<String, Class<?>> typeAliases = new HashMap<>();
 
+
   public TypeAliasRegistry() {
+    // 构造函数里 注册系统内置的类型别名
     registerAlias("string", String.class);
 
+    // 基本包装类型
     registerAlias("byte", Byte.class);
     registerAlias("long", Long.class);
     registerAlias("short", Short.class);
@@ -51,6 +55,7 @@ public class TypeAliasRegistry {
     registerAlias("float", Float.class);
     registerAlias("boolean", Boolean.class);
 
+    // 基本数组包装类型
     registerAlias("byte[]", Byte[].class);
     registerAlias("long[]", Long[].class);
     registerAlias("short[]", Short[].class);
@@ -60,6 +65,7 @@ public class TypeAliasRegistry {
     registerAlias("float[]", Float[].class);
     registerAlias("boolean[]", Boolean[].class);
 
+    // 加个下划线，就变成了基本类型
     registerAlias("_byte", byte.class);
     registerAlias("_long", long.class);
     registerAlias("_short", short.class);
@@ -69,6 +75,7 @@ public class TypeAliasRegistry {
     registerAlias("_float", float.class);
     registerAlias("_boolean", boolean.class);
 
+    // 加个下划线，就变成了基本数组类型
     registerAlias("_byte[]", byte[].class);
     registerAlias("_long[]", long[].class);
     registerAlias("_short[]", short[].class);
@@ -78,6 +85,7 @@ public class TypeAliasRegistry {
     registerAlias("_float[]", float[].class);
     registerAlias("_boolean[]", boolean[].class);
 
+    // 日期数字型
     registerAlias("date", Date.class);
     registerAlias("decimal", BigDecimal.class);
     registerAlias("bigdecimal", BigDecimal.class);
@@ -90,6 +98,7 @@ public class TypeAliasRegistry {
     registerAlias("biginteger[]", BigInteger[].class);
     registerAlias("object[]", Object[].class);
 
+    // 集合型
     registerAlias("map", Map.class);
     registerAlias("hashmap", HashMap.class);
     registerAlias("list", List.class);
@@ -100,6 +109,9 @@ public class TypeAliasRegistry {
     registerAlias("ResultSet", ResultSet.class);
   }
 
+  /**
+   * 解析类型别名
+   */
   @SuppressWarnings("unchecked")
   // throws class cast exception as well if types cannot be assigned
   public <T> Class<T> resolveAlias(String string) {
@@ -113,6 +125,7 @@ public class TypeAliasRegistry {
       if (typeAliases.containsKey(key)) {
         value = (Class<T>) typeAliases.get(key);
       } else {
+        // 找不到，尝试将string直接转换成Class
         value = (Class<T>) Resources.classForName(string);
       }
       return value;
@@ -125,6 +138,9 @@ public class TypeAliasRegistry {
     registerAliases(packageName, Object.class);
   }
 
+  /**
+   * 扫描并注册包下所有继承于superType的类型别名
+   */
   public void registerAliases(String packageName, Class<?> superType) {
     ResolverUtil<Class<?>> resolverUtil = new ResolverUtil<>();
     resolverUtil.find(new ResolverUtil.IsA(superType), packageName);
@@ -138,8 +154,13 @@ public class TypeAliasRegistry {
     }
   }
 
+  /**
+   * 注册类型别名
+   */
   public void registerAlias(Class<?> type) {
+    //如果没有类型别名，用Class.getSimpleName来注册
     String alias = type.getSimpleName();
+    //或者通过Alias注解来注册(Class.getAnnotation)
     Alias aliasAnnotation = type.getAnnotation(Alias.class);
     if (aliasAnnotation != null) {
       alias = aliasAnnotation.value();
@@ -147,6 +168,9 @@ public class TypeAliasRegistry {
     registerAlias(alias, type);
   }
 
+  /**
+   * 注册类型别名
+   */
   public void registerAlias(String alias, Class<?> value) {
     if (alias == null) {
       throw new TypeException("The parameter alias cannot be null");

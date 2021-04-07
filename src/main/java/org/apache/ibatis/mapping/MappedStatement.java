@@ -29,6 +29,8 @@ import org.apache.ibatis.scripting.LanguageDriver;
 import org.apache.ibatis.session.Configuration;
 
 /**
+ * 用于保存xml配置的mapper信息
+ *
  * @author Clinton Begin
  */
 public final class MappedStatement {

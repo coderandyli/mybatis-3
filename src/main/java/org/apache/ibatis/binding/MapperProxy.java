@@ -31,6 +31,7 @@ import org.apache.ibatis.session.SqlSession;
 
 /**
  * 基于 【JDK动态代理】 实现 映射器代理
+ * - mapper接口的代理类
  *
  * @author Clinton Begin
  * @author Eduardo Macarron

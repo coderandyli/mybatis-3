@@ -44,19 +44,28 @@ public class PoolState {
    * 累积请求时间
    */
   protected long accumulatedRequestTime = 0;
+  /**
+   * 累积Checkout时间
+   */
   protected long accumulatedCheckoutTime = 0;
+  /**
+   * 已声明【过期】connection的数量
+   */
   protected long claimedOverdueConnectionCount = 0;
+  /**
+   * 累积已声明【过期】的connection的checkout时间
+   */
   protected long accumulatedCheckoutTimeOfOverdueConnections = 0;
   /**
    * 累积等待时间
    */
   protected long accumulatedWaitTime = 0;
   /**
-   * 要等待的次数
+   * 要等待的次数（没有从连接池中拿到connection, +1）
    */
   protected long hadToWaitCount = 0;
   /**
-   * 坏的连接次数
+   * 不可用的connection数量
    */
   protected long badConnectionCount = 0;
 
