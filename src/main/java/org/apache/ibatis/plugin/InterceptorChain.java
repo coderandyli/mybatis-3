@@ -34,7 +34,6 @@ import java.util.List;
  * @author Clinton Begin
  */
 public class InterceptorChain {
-
   /**
    * 拦截器集合
    */

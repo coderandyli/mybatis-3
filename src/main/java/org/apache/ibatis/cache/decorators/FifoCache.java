@@ -74,8 +74,13 @@ public class FifoCache implements Cache {
     keyList.clear();
   }
 
+  /**
+   * FIFO移除最老的数据
+   * @param key
+   */
   private void cycleKeyList(Object key) {
     keyList.addLast(key);
+    // 如果当前缓存数量超过阈值，移除最老的数据
     if (keyList.size() > size) {
       Object oldestKey = keyList.removeFirst();
       delegate.removeObject(oldestKey);

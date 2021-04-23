@@ -83,16 +83,15 @@
 -  SqlSession
     - 对外提供了用户和数据库之间交互所需的所有方法，隐藏了底层的细节，默认实现类是**DefaultSqlSession**
     - Mybatis工作的主要顶层API，表示和数据库交互时的会话，完成数据库的CURD操作， SqlSession将执行sql的业务逻辑委托给了**Executur**（查看Executor的唯一实现类DefaultSqlSession）, 很多操作都委托给了Executor
-
+    
 - Configuration：MyBatis所有的配置信息都保存在Configuration对象之中，配置文件中的大部分配置都会存储到该类中
 
 # Executor
 - Executor: MyBatis执行器，Mybatis调度的核心，负责SQL语句的生成和查询缓存的维护
 - Executor 相关类的主要作用是执行sql的业务逻辑
 - Executor是个接口，BaseExecutor是其抽象类
-- BatchExecutor、SimpleExecutor、ReuseExecutor是BaseExecutor的三个继承类
+- SimpleExecutor、BatchExecutor、、ReuseExecutor是BaseExecutor的三个继承类
 - 使用了**模板模式**，BatchExecutor作为一个抽象类，一个算法骨架，将某些步骤退出到其继承类中实现
-
 
 > 具体执行逻辑待补充
 
@@ -132,12 +131,10 @@ public class ErrorContext {
 
 # Plugin 模块
 - Mybatis Plugin 主要拦截MyBatis 在sql执行过程中涉及的一些方法
-
 ## 实现原理
 - 基于职责链模式+动态代理实现
 > 1. SQL执行过程中， Mybatis会创建Executor（newExecutor()）、StatementHandler()、ParameterHandler(newParameterHandler())、ResultSetHandler（newResultSetHandler()） 这几个类的对象
 > 会调用interceptorChain.pluginAll()方法，通过动态代理，生成代理对象。
-
 
 ## @Intercepts
 - 标注拦截的目标方法
@@ -152,7 +149,6 @@ ResultSetHandler | handleResultSets、handleCursorResultSets | 封装执行结�
 
 # logging 日志模块
 Mybatis的日志模块并没有直接采用Slf4j(简单日志门面)，而是通过**适配器模式**，适配各个不同日志框架（Log4j、Logback）
-
 
 # 一级缓存和二级缓存
 - 查询执行流程: 二级缓存 -> 一级缓存 -> 数据库。
@@ -180,7 +176,6 @@ Mybatis的日志模块并没有直接采用Slf4j(简单日志门面)，而是通
 - 【二级缓存】源码阅读入口：CachingExecutor#query
 
 # datasource （数据源）
--   
 
 # 执行过程
 

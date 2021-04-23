@@ -40,6 +40,9 @@ public class ErrorContext {
   private ErrorContext() {
   }
 
+  /**
+   * 获取线程唯一的单例
+   */
   public static ErrorContext instance() {
     return LOCAL.get();
   }

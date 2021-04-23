@@ -33,6 +33,7 @@ import org.apache.ibatis.transaction.Transaction;
 
 /**
  * @author Clinton Begin
+ * 该 不做特殊的事情。它为每个语句的执行创建一个新的预处理语句
  */
 public class SimpleExecutor extends BaseExecutor {
 

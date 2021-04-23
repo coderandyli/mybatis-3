@@ -103,7 +103,7 @@ public class CachingExecutor implements Executor {
      *
      * - 此处的cache从配置文件里面解析了相关缓存配置，利用【装饰者模式】装载了一个一个装饰者详见{@link CacheBuilder#build()}
      *
-     * 默认情况下的装饰链为：SynchronizedCache -> LoggingCache -> SerializedCache -> LruCache -> PerpetualCache。
+     * 默认情况下的装饰链为：SynchronizedCache -> LoggingCache -> SerializedCache -> LruCache -> PerpetualCache.
      */
     // 二级缓存的实现，先查缓存
     Cache cache = ms.getCache();

@@ -37,6 +37,8 @@ import org.apache.ibatis.transaction.Transaction;
 
 /**
  * @author Jeff Butler
+ * 该执行器会批量执行所有更新语句,如果 SELECT 在它们中间执行还会标定它们是 必须的,来保证一个简单并易于理解的行为
+ * - 专门用于执行批量sql操作
  */
 public class BatchExecutor extends BaseExecutor {
 

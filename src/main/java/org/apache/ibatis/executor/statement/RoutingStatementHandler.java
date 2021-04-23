@@ -31,6 +31,8 @@ import org.apache.ibatis.session.RowBounds;
 
 /**
  * @author Clinton Begin
+ *
+ * {@link org.apache.ibatis.session.Configuration#newStatementHandler(Executor, MappedStatement, Object, RowBounds, ResultHandler, BoundSql)}
  */
 public class RoutingStatementHandler implements StatementHandler {
 

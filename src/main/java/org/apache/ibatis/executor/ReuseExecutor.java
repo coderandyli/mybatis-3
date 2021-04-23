@@ -35,6 +35,8 @@ import org.apache.ibatis.transaction.Transaction;
 
 /**
  * @author Clinton Begin
+ * 该执行器类型会复用预处理语句
+ *  - ReuseExecutor会重用statement执行sql操作
  */
 public class ReuseExecutor extends BaseExecutor {
 

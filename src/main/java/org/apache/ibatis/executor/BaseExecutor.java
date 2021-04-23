@@ -45,10 +45,12 @@ import org.apache.ibatis.transaction.Transaction;
 import org.apache.ibatis.type.TypeHandlerRegistry;
 
 /**
- * {@link Executor} 的抽象类，BatchExecutor、SimpleExecutor、ReuseExecutor的基类.
- * - 基于模板方法模式
+ * {@link Executor} 的抽象类， {@link BatchExecutor}、{@link SimpleExecutor}、{@link ReuseExecutor}的基类
+ * ExecutorType: SIMPLE, REUSE, BATCH
+ * - 基于【模板方法模式】
  *
  * 【一级缓存】在该类中实现
+ *  {@link BaseExecutor#query(MappedStatement, Object, RowBounds, ResultHandler, CacheKey, BoundSql)}
  * @author Clinton Begin
  */
 public abstract class BaseExecutor implements Executor {

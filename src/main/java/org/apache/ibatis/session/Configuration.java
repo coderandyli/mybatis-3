@@ -716,6 +716,7 @@ public class Configuration {
       executor = new SimpleExecutor(this, transaction);
     }
     // 是否开启二级缓存, 如果开启了【二级缓存】使用CachingExecutor装饰 Cache
+    // 【装饰者模式】的又一应用
     if (cacheEnabled) {
       executor = new CachingExecutor(executor);
     }

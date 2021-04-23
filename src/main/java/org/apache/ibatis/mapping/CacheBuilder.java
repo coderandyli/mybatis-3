@@ -112,7 +112,7 @@ public class CacheBuilder {
         // 设置额外属性（又来一遍）
         setCacheProperties(cache);
       }
-      // 设置标准的装饰cache
+      //【装饰者模式】 设置标准的装饰cache,
       cache = setStandardDecorators(cache);
     } else if (!LoggingCache.class.isAssignableFrom(cache.getClass())) {
       // 如果不是自定义缓存，且不是日志，增加日志

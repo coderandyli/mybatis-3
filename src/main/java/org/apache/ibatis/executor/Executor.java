@@ -31,7 +31,7 @@ import org.apache.ibatis.transaction.Transaction;
  * @author Clinton Begin
  *
  * - 使用Executor执行sql请求，BatchExecutor、SimpleExecutor、ReuseExecutor三个继承类
- * - 采用了模板方法模式
+ * - 采用了【模板方法模式】
  */
 public interface Executor {
 

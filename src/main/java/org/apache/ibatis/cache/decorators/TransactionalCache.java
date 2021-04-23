@@ -93,6 +93,7 @@ public class TransactionalCache implements Cache {
 
   @Override
   public void putObject(Object key, Object object) {
+    // 将缓存数据临时暂存，待commit时，再存入【二级缓存】中
     entriesToAddOnCommit.put(key, object);
   }
 
@@ -108,7 +109,7 @@ public class TransactionalCache implements Cache {
   }
 
   /**
-   * 提交事务
+   * 提交事务，将暂存的缓存数据存入【二级缓存中】
    */
   public void commit() {
     if (clearOnCommit) {
